@@ -6,7 +6,6 @@ import {
   Receipt,
   AlertCircle,
   TrendingUp,
-  Settings,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,7 +22,7 @@ const menuItems = [
   { icon: FileText, label: "IVA", href: "/iva" },
   { icon: AlertCircle, label: "Obligaciones", href: "/obligaciones" },
   { icon: TrendingUp, label: "Informes", href: "/informes" },
-  { icon: Settings, label: "Configuración", href: "/configuracion" },
+  // 🔹 Eliminado el ítem de Configuración
 ];
 
 export function Layout({ children }: LayoutProps) {
@@ -138,7 +137,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Barra inferior móvil */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-card shadow-md">
         <div className="flex justify-around items-center h-16">
-          {menuItems.slice(0, 5).map((item) => {
+          {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
             return (
