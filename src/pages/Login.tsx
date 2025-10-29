@@ -7,28 +7,30 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [message, setMessage] = useState("");
 
+  // 🔹 Iniciar sesión o registrar usuario
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setMessage("");
     setLoading(true);
 
     try {
       let response;
       if (isRegistering) {
-        // 🔹 Registro de nuevo usuario
+        // Registro nuevo usuario
         response = await supabase.auth.signUp({ email, password });
       } else {
-        // 🔹 Inicio de sesión existente
+        // Inicio de sesión
         response = await supabase.auth.signInWithPassword({ email, password });
       }
 
       if (response.error) throw response.error;
 
-      // 🔹 Redirigir al panel principal
-      window.location.href = "/home";
+      // ✅ Redirigir al dashboard principal
+      window.location.href = "/";
     } catch (err: unknown) {
-      // ✅ Tipado seguro en lugar de "any"
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -36,6 +38,31 @@ export default function Login() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 🔹 Recuperar contraseña
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Por favor ingresa tu correo para recuperar la contraseña.");
+      return;
+    }
+
+    try {
+      setError("");
+      setMessage("");
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+      setMessage("Te hemos enviado un enlace para restablecer tu contraseña.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Error al enviar el correo de recuperación.");
+      }
     }
   };
 
@@ -86,8 +113,23 @@ export default function Login() {
             : "Iniciar sesión"}
         </button>
 
-        {/* Mostrar errores */}
+        {/* Mostrar errores o mensajes */}
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+        {message && <p className="text-green-600 text-sm text-center">{message}</p>}
+
+        {/* Recuperar contraseña */}
+        {!isRegistering && (
+          <p className="text-sm text-center mt-2 text-gray-600">
+            ¿Olvidaste tu contraseña?{" "}
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-blue-600 hover:underline"
+            >
+              Recuperar acceso
+            </button>
+          </p>
+        )}
 
         {/* Alternar entre login y registro */}
         <p className="text-center text-sm text-gray-600">

@@ -11,6 +11,7 @@ import Obligations from "./pages/Obligations";
 import Reports from "./pages/Reports";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword"; // ✅ Nueva ruta agregada
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 
@@ -58,10 +59,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* 🔹 Ruta pública de login */}
+          {/* 🔹 Rutas públicas */}
           <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} /> {/* ✅ nueva */}
 
-          {/* 🔹 Rutas privadas envueltas en Layout */}
+          {/* 🔹 Rutas privadas dentro del Layout */}
           <Route
             path="/"
             element={
