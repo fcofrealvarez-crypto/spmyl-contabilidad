@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { StatCard } from "@/components/StatCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,14 @@ interface Obligation {
 }
 
 export default function Dashboard() {
-  // 🔹 Datos iniciales vacíos
+  const navigate = useNavigate();
+
+  // 🔹 Mes actual dinámico
+  const currentMonth = new Date().toLocaleDateString("es-CL", {
+    month: "long",
+    year: "numeric",
+  });
+
   const stats = [
     {
       title: "Ingresos del Mes",
@@ -82,9 +90,13 @@ export default function Dashboard() {
         <div className="flex gap-3">
           <Button variant="outline" size="sm">
             <Calendar className="h-4 w-4 mr-2" />
-            Junio 2025
+            {currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1)}
           </Button>
-          <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
+          <Button
+            size="sm"
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            onClick={() => navigate("/transacciones")}
+          >
             <Receipt className="h-4 w-4 mr-2" />
             Nueva Transacción
           </Button>
@@ -104,7 +116,12 @@ export default function Dashboard() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Transacciones Recientes</h2>
-            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:text-blue-800"
+              onClick={() => navigate("/transacciones")}
+            >
               Ver todas
               <ArrowUpRight className="h-4 w-4 ml-1" />
             </Button>
@@ -155,7 +172,12 @@ export default function Dashboard() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Próximas Obligaciones</h2>
-            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-blue-600 hover:text-blue-800"
+              onClick={() => navigate("/obligaciones")}
+            >
               Ver todas
               <ArrowUpRight className="h-4 w-4 ml-1" />
             </Button>
