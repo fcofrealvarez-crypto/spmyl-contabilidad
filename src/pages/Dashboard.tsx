@@ -38,7 +38,7 @@ export default function Dashboard() {
       change: "0% vs mes anterior",
       changeType: "neutral" as const,
       icon: TrendingUp,
-      iconColor: "bg-success"
+      iconColor: "bg-green-500/10",
     },
     {
       title: "Gastos del Mes",
@@ -46,7 +46,7 @@ export default function Dashboard() {
       change: "0% vs mes anterior",
       changeType: "neutral" as const,
       icon: TrendingDown,
-      iconColor: "bg-destructive"
+      iconColor: "bg-red-500/10",
     },
     {
       title: "IVA a Pagar",
@@ -54,7 +54,7 @@ export default function Dashboard() {
       change: "Sin vencimiento",
       changeType: "neutral" as const,
       icon: FileText,
-      iconColor: "bg-warning"
+      iconColor: "bg-yellow-500/10",
     },
     {
       title: "Balance Actual",
@@ -62,20 +62,19 @@ export default function Dashboard() {
       change: "0% vs mes anterior",
       changeType: "neutral" as const,
       icon: DollarSign,
-      iconColor: "bg-primary"
+      iconColor: "bg-blue-500/10",
     },
   ];
 
-  // 🔹 Listas vacías
   const recentTransactions: Transaction[] = [];
   const upcomingObligations: Obligation[] = [];
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <section className="p-6 space-y-8">
+      {/* 🔹 Encabezado principal */}
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
             Resumen de tu actividad financiera
           </p>
@@ -85,27 +84,27 @@ export default function Dashboard() {
             <Calendar className="h-4 w-4 mr-2" />
             Junio 2025
           </Button>
-          <Button size="sm" className="bg-gradient-primary">
+          <Button size="sm" className="bg-blue-600 text-white hover:bg-blue-700">
             <Receipt className="h-4 w-4 mr-2" />
             Nueva Transacción
           </Button>
         </div>
-      </div>
+      </header>
 
-      {/* Stats Grid */}
+      {/* 🔹 Tarjetas resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard key={index} {...stat} />
+        {stats.map((stat, i) => (
+          <StatCard key={i} {...stat} />
         ))}
       </div>
 
-      {/* Secciones inferiores */}
+      {/* 🔹 Sección inferior */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Transacciones Recientes */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-foreground">Transacciones Recientes</h2>
-            <Button variant="ghost" size="sm" className="text-primary">
+            <h2 className="text-xl font-bold">Transacciones Recientes</h2>
+            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
               Ver todas
               <ArrowUpRight className="h-4 w-4 ml-1" />
             </Button>
@@ -117,34 +116,34 @@ export default function Dashboard() {
             </p>
           ) : (
             <div className="space-y-4">
-              {recentTransactions.map((transaction) => (
+              {recentTransactions.map((t) => (
                 <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-secondary/50 transition-colors"
+                  key={t.id}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      transaction.type === "Ingreso" 
-                        ? "bg-success/10" 
-                        : "bg-destructive/10"
-                    }`}>
-                      <Receipt className={`h-4 w-4 ${
-                        transaction.type === "Ingreso"
-                          ? "text-success"
-                          : "text-destructive"
-                      }`} />
+                    <div
+                      className={`p-2 rounded-lg ${
+                        t.type === "Ingreso" ? "bg-green-500/10" : "bg-red-500/10"
+                      }`}
+                    >
+                      <Receipt
+                        className={`h-4 w-4 ${
+                          t.type === "Ingreso" ? "text-green-600" : "text-red-600"
+                        }`}
+                      />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">{transaction.description}</p>
-                      <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                      <p className="font-medium">{t.description}</p>
+                      <p className="text-sm text-muted-foreground">{t.date}</p>
                     </div>
                   </div>
-                  <p className={`font-semibold ${
-                    transaction.type === "Ingreso"
-                      ? "text-success"
-                      : "text-destructive"
-                  }`}>
-                    {transaction.amount}
+                  <p
+                    className={`font-semibold ${
+                      t.type === "Ingreso" ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {t.amount}
                   </p>
                 </div>
               ))}
@@ -155,8 +154,8 @@ export default function Dashboard() {
         {/* Próximas Obligaciones */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-foreground">Próximas Obligaciones</h2>
-            <Button variant="ghost" size="sm" className="text-primary">
+            <h2 className="text-xl font-bold">Próximas Obligaciones</h2>
+            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
               Ver todas
               <ArrowUpRight className="h-4 w-4 ml-1" />
             </Button>
@@ -168,30 +167,30 @@ export default function Dashboard() {
             </p>
           ) : (
             <div className="space-y-4">
-              {upcomingObligations.map((obligation) => (
+              {upcomingObligations.map((o) => (
                 <div
-                  key={obligation.id}
-                  className="flex items-start justify-between p-4 rounded-lg border border-border hover:border-primary/50 transition-colors"
+                  key={o.id}
+                  className="flex items-start justify-between p-4 rounded-lg border border-border hover:border-blue-300 transition-colors"
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      obligation.priority === "high"
-                        ? "bg-destructive/10"
-                        : "bg-warning/10"
-                    }`}>
-                      <AlertCircle className={`h-4 w-4 ${
-                        obligation.priority === "high"
-                          ? "text-destructive"
-                          : "text-warning"
-                      }`} />
+                    <div
+                      className={`p-2 rounded-lg ${
+                        o.priority === "high" ? "bg-red-500/10" : "bg-yellow-500/10"
+                      }`}
+                    >
+                      <AlertCircle
+                        className={`h-4 w-4 ${
+                          o.priority === "high" ? "text-red-600" : "text-yellow-600"
+                        }`}
+                      />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">{obligation.title}</p>
+                      <p className="font-medium">{o.title}</p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Vence: {obligation.date}
+                        Vence: {o.date}
                       </p>
-                      <p className="text-sm font-semibold text-primary mt-1">
-                        {obligation.amount}
+                      <p className="text-sm font-semibold text-blue-600 mt-1">
+                        {o.amount}
                       </p>
                     </div>
                   </div>
@@ -201,6 +200,6 @@ export default function Dashboard() {
           )}
         </Card>
       </div>
-    </div>
+    </section>
   );
 }

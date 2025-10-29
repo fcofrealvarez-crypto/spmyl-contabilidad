@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/Layout"; // ✅ Ruta corregida
 import Index from "./pages/Index";
 import Transactions from "./pages/Transactions";
 import IVA from "./pages/IVA";
@@ -21,14 +21,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Verificar sesión actual
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       setIsAuthenticated(!!data.session);
     };
     checkSession();
 
-    // Escuchar cambios de sesión
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
     });
@@ -38,7 +36,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Mientras verifica la sesión
   if (isAuthenticated === null) {
     return (
       <div className="flex h-screen items-center justify-center text-gray-500">
@@ -47,7 +44,6 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Si no está autenticado, redirigir al login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
@@ -65,7 +61,7 @@ const App = () => (
           {/* 🔹 Ruta pública de login */}
           <Route path="/login" element={<Login />} />
 
-          {/* 🔹 Rutas privadas dentro del layout */}
+          {/* 🔹 Rutas privadas envueltas en Layout */}
           <Route
             path="/"
             element={
@@ -117,7 +113,7 @@ const App = () => (
             }
           />
 
-          {/* Ruta de error */}
+          {/* 🔹 Página no encontrada */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
