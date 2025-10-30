@@ -60,7 +60,7 @@ export default function Reports() {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
   // Datos simulados
-  const quickStats = { ingresos: 1200000, gastos: 850000, resultado: 350000, rentabilidad: 18.2 };
+  const quickStats = { ingresos: 0, gastos: 0, resultado: 0, rentabilidad: 0 };
 
   const reports: Report[] = [
     { id: 1, title: "Estado de Resultados", icon: TrendingUp, description: "Ingresos, gastos y resultado del período" },
