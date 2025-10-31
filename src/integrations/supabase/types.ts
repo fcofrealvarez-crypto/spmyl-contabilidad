@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      asientos_contables: {
+        Row: {
+          codigo_cuenta: string
+          compensacion: number | null
+          control: number | null
+          created_at: string
+          cuenta_descripcion: string
+          debe: number | null
+          fecha: string
+          glosa: string | null
+          haber: number | null
+          id: string
+          mes: number | null
+          nombre: string | null
+          numero_comprobante: string | null
+          numero_documento: string | null
+          rut: string | null
+          tipo_comprobante: string
+          tipo_documento: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          codigo_cuenta: string
+          compensacion?: number | null
+          control?: number | null
+          created_at?: string
+          cuenta_descripcion: string
+          debe?: number | null
+          fecha: string
+          glosa?: string | null
+          haber?: number | null
+          id?: string
+          mes?: number | null
+          nombre?: string | null
+          numero_comprobante?: string | null
+          numero_documento?: string | null
+          rut?: string | null
+          tipo_comprobante: string
+          tipo_documento?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          codigo_cuenta?: string
+          compensacion?: number | null
+          control?: number | null
+          created_at?: string
+          cuenta_descripcion?: string
+          debe?: number | null
+          fecha?: string
+          glosa?: string | null
+          haber?: number | null
+          id?: string
+          mes?: number | null
+          nombre?: string | null
+          numero_comprobante?: string | null
+          numero_documento?: string | null
+          rut?: string | null
+          tipo_comprobante?: string
+          tipo_documento?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cuentas: {
+        Row: {
+          codigo: string
+          created_at: string
+          descripcion: string
+          id: string
+          tipo: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          descripcion: string
+          id?: string
+          tipo: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          descripcion?: string
+          id?: string
+          tipo?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
