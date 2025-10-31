@@ -40,7 +40,7 @@ export default function Dashboard() {
   const [ivaData, setIvaData] = useState<{ pagar: number }>({ pagar: 0 });
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Mes actual
+  // 🔹 Mes actual dinámico
   const currentMonth = new Date().toLocaleDateString("es-CL", {
     month: "long",
     year: "numeric",
@@ -50,29 +50,30 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+
         // 1️⃣ Traer transacciones
         const { data: txData, error: txError } = await supabase
           .from("transactions")
           .select("*")
-          .order("date", { ascending: false })
-          .limit(5);
+          .order("date", { ascending: false });
 
         if (txError) throw txError;
 
         // 2️⃣ Traer el último registro de IVA
-        const { data: ivaRecords, error: ivaError } = await supabase
+        const { data: ivaRecord, error: ivaError } = await supabase
           .from("iva_records")
-          .select("pagar")
+          .select("*")
           .order("created_at", { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (ivaError && ivaError.code !== "PGRST116") throw ivaError;
 
         setTransactions(txData || []);
-        setIvaData(ivaRecords || { pagar: 0 });
+        setIvaData(ivaRecord || { pagar: 0 });
       } catch (err) {
-        console.error(err);
+        console.error("❌ Error cargando Dashboard:", err);
         toast.error("Error al cargar datos del dashboard");
       } finally {
         setLoading(false);
@@ -85,15 +86,16 @@ export default function Dashboard() {
   // 🔹 Cálculos automáticos
   const ingresos =
     transactions
-      .filter((t) => t.type === "Ingreso")
-      .reduce((sum, t) => sum + t.amount, 0) || 0;
+      ?.filter((t) => t.type === "Ingreso")
+      ?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
 
   const gastos =
     transactions
-      .filter((t) => t.type === "Gasto")
-      .reduce((sum, t) => sum + t.amount, 0) || 0;
+      ?.filter((t) => t.type === "Gasto")
+      ?.reduce((sum, t) => sum + (t.amount || 0), 0) || 0;
 
   const balance = ingresos - gastos;
+  const ivaPagar = ivaData?.pagar || 0;
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("es-CL", {
@@ -101,6 +103,7 @@ export default function Dashboard() {
       currency: "CLP",
     }).format(value);
 
+  // 📈 Tarjetas resumen
   const stats = [
     {
       title: "Ingresos del Mes",
@@ -120,9 +123,8 @@ export default function Dashboard() {
     },
     {
       title: "IVA a Pagar",
-      value: formatCurrency(ivaData.pagar),
-      change:
-        ivaData.pagar > 0 ? "Pendiente de pago" : "Sin obligaciones actuales",
+      value: formatCurrency(ivaPagar),
+      change: ivaPagar > 0 ? "Pendiente de pago" : "Sin obligaciones actuales",
       changeType: "neutral" as const,
       icon: FileText,
       iconColor: "bg-yellow-500/10",
@@ -142,17 +144,18 @@ export default function Dashboard() {
     },
   ];
 
-  const recentTransactions = transactions.slice(0, 5);
+  const recentTransactions = transactions?.slice(0, 5) || [];
   const upcomingObligations: Obligation[] = [
     {
       id: 1,
       title: "Declaración IVA F29",
       date: "2025-10-31",
       priority: "high",
-      amount: formatCurrency(ivaData.pagar),
+      amount: formatCurrency(ivaPagar),
     },
   ];
 
+  // ⏳ Estado de carga
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-muted-foreground">
@@ -163,7 +166,7 @@ export default function Dashboard() {
 
   return (
     <section className="p-6 space-y-8">
-      {/* Encabezado principal */}
+      {/* 🧭 Encabezado principal */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -187,14 +190,14 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Tarjetas resumen */}
+      {/* 💰 Tarjetas resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
           <StatCard key={i} {...stat} />
         ))}
       </div>
 
-      {/* Sección inferior */}
+      {/* 📋 Sección inferior */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Transacciones recientes */}
         <Card className="p-6">
@@ -254,7 +257,7 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Obligaciones */}
+        {/* Próximas obligaciones */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Próximas Obligaciones</h2>
