@@ -1,24 +1,26 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { StatCard } from "@/components/StatCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  DollarSign, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertCircle,
-  Receipt,
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
   FileText,
   Calendar,
-  ArrowUpRight
+  Receipt,
+  ArrowUpRight,
+  AlertCircle,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// 🔹 Interfaces tipadas
 interface Transaction {
-  id: number;
-  type: string;
+  id: string;
+  type: "Ingreso" | "Gasto";
   description: string;
-  amount: string;
+  amount: number;
   date: string;
 }
 
@@ -33,53 +35,135 @@ interface Obligation {
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  // 🔹 Mes actual dinámico
+  // 📊 Estados principales
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [ivaData, setIvaData] = useState<{ pagar: number }>({ pagar: 0 });
+  const [loading, setLoading] = useState(true);
+
+  // 🔹 Mes actual
   const currentMonth = new Date().toLocaleDateString("es-CL", {
     month: "long",
     year: "numeric",
   });
 
+  // 🔹 Cargar datos desde Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1️⃣ Traer transacciones
+        const { data: txData, error: txError } = await supabase
+          .from("transactions")
+          .select("*")
+          .order("date", { ascending: false })
+          .limit(5);
+
+        if (txError) throw txError;
+
+        // 2️⃣ Traer el último registro de IVA
+        const { data: ivaRecords, error: ivaError } = await supabase
+          .from("iva_records")
+          .select("pagar")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        if (ivaError && ivaError.code !== "PGRST116") throw ivaError;
+
+        setTransactions(txData || []);
+        setIvaData(ivaRecords || { pagar: 0 });
+      } catch (err) {
+        console.error(err);
+        toast.error("Error al cargar datos del dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // 🔹 Cálculos automáticos
+  const ingresos =
+    transactions
+      .filter((t) => t.type === "Ingreso")
+      .reduce((sum, t) => sum + t.amount, 0) || 0;
+
+  const gastos =
+    transactions
+      .filter((t) => t.type === "Gasto")
+      .reduce((sum, t) => sum + t.amount, 0) || 0;
+
+  const balance = ingresos - gastos;
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+    }).format(value);
+
   const stats = [
     {
       title: "Ingresos del Mes",
-      value: "$0",
-      change: "0% vs mes anterior",
-      changeType: "neutral" as const,
+      value: formatCurrency(ingresos),
+      change: "Últimos registros",
+      changeType: "positive" as const,
       icon: TrendingUp,
       iconColor: "bg-green-500/10",
     },
     {
       title: "Gastos del Mes",
-      value: "$0",
-      change: "0% vs mes anterior",
-      changeType: "neutral" as const,
+      value: formatCurrency(gastos),
+      change: "Últimos registros",
+      changeType: "negative" as const,
       icon: TrendingDown,
       iconColor: "bg-red-500/10",
     },
     {
       title: "IVA a Pagar",
-      value: "$0",
-      change: "Sin vencimiento",
+      value: formatCurrency(ivaData.pagar),
+      change:
+        ivaData.pagar > 0 ? "Pendiente de pago" : "Sin obligaciones actuales",
       changeType: "neutral" as const,
       icon: FileText,
       iconColor: "bg-yellow-500/10",
     },
     {
       title: "Balance Actual",
-      value: "$0",
-      change: "0% vs mes anterior",
+      value: formatCurrency(balance),
+      change:
+        balance > 0
+          ? "Superávit operativo"
+          : balance < 0
+          ? "Déficit operativo"
+          : "Equilibrado",
       changeType: "neutral" as const,
       icon: DollarSign,
       iconColor: "bg-blue-500/10",
     },
   ];
 
-  const recentTransactions: Transaction[] = [];
-  const upcomingObligations: Obligation[] = [];
+  const recentTransactions = transactions.slice(0, 5);
+  const upcomingObligations: Obligation[] = [
+    {
+      id: 1,
+      title: "Declaración IVA F29",
+      date: "2025-10-31",
+      priority: "high",
+      amount: formatCurrency(ivaData.pagar),
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64 text-muted-foreground">
+        Cargando información del dashboard...
+      </div>
+    );
+  }
 
   return (
     <section className="p-6 space-y-8">
-      {/* 🔹 Encabezado principal */}
+      {/* Encabezado principal */}
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -103,16 +187,16 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* 🔹 Tarjetas resumen */}
+      {/* Tarjetas resumen */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
           <StatCard key={i} {...stat} />
         ))}
       </div>
 
-      {/* 🔹 Sección inferior */}
+      {/* Sección inferior */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Transacciones Recientes */}
+        {/* Transacciones recientes */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Transacciones Recientes</h2>
@@ -152,7 +236,9 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <p className="font-medium">{t.description}</p>
-                      <p className="text-sm text-muted-foreground">{t.date}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(t.date).toLocaleDateString("es-CL")}
+                      </p>
                     </div>
                   </div>
                   <p
@@ -160,7 +246,7 @@ export default function Dashboard() {
                       t.type === "Ingreso" ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    {t.amount}
+                    {formatCurrency(t.amount)}
                   </p>
                 </div>
               ))}
@@ -168,7 +254,7 @@ export default function Dashboard() {
           )}
         </Card>
 
-        {/* Próximas Obligaciones */}
+        {/* Obligaciones */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Próximas Obligaciones</h2>
