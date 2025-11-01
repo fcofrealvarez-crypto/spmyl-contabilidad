@@ -11,7 +11,7 @@ import Index from "@/pages/Index";
 import LibroMayor from "@/pages/LibroMayor";
 import Transactions from "@/pages/Transactions";
 import IVA from "@/pages/IVA";
-import Obligations from "@/pages/obligations";
+import Obligations from "@/pages/Obligations";
 import Reports from "@/pages/Reports";
 import ImportarExcel from "@/pages/importar/ImportarExcel"; // ✅ NUEVO
 import NotFound from "@/pages/NotFound";
