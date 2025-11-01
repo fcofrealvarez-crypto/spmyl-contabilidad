@@ -11,14 +11,15 @@ import Index from "@/pages/Index";
 import LibroMayor from "@/pages/LibroMayor";
 import Transactions from "@/pages/Transactions";
 import IVA from "@/pages/IVA";
-import Obligations from "@/pages/Obligations";
+import Obligations from "@/pages/obligations";
 import Reports from "@/pages/Reports";
+import ImportarExcel from "@/pages/importar/ImportarExcel"; // ✅ NUEVO
 import NotFound from "@/pages/NotFound";
 
 // 🔹 Configuración de React Query
 const queryClient = new QueryClient();
 
-// 🔐 Componente de protección de rutas
+// 🔐 Protección de rutas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
 
@@ -42,7 +43,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* ✅ Toasters: uno para notificaciones globales y otro para Sonner */}
+        {/* ✅ Toasters: notificaciones globales */}
         <Toaster />
         <Sonner />
 
@@ -98,7 +99,17 @@ const App = () => {
               }
             />
 
-            {/* 🚫 Ruta por defecto para páginas no encontradas */}
+            {/* ✅ NUEVA RUTA: Importación Excel */}
+            <Route
+              path="/importar-excel"
+              element={
+                <ProtectedRoute>
+                  <ImportarExcel />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* 🚫 Ruta 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
