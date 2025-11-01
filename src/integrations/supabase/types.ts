@@ -20,43 +20,6 @@ export type Database = {
           tipo_comp: string | null;
           fecha: string | null;
           mes: string | null;
-          codigo_cuenta: string | null; // ✅ renombrado correctamente
-          cta_descripcion: string | null;
-          glosa: string | null;
-          debe: number | null;
-          haber: number | null;
-          control: number | null;
-          compensacion: number | null;
-          tipo_doc: string | null;
-          n_doc: string | null;
-          rut: string | null;
-          nombre: string | null;
-          created_at: string | null;
-        };
-        Insert: {
-          id?: number;
-          n_comp?: string | null;
-          tipo_comp?: string | null;
-          fecha?: string | null;
-          mes?: string | null;
-          codigo_cuenta?: string | null;
-          cta_descripcion?: string | null;
-          glosa?: string | null;
-          debe?: number | null;
-          haber?: number | null;
-          control?: number | null;
-          compensacion?: number | null;
-          tipo_doc?: string | null;
-          n_doc?: string | null;
-          rut?: string | null;
-          nombre?: string | null;
-          created_at?: string | null;
-        };
-        Update: Partial<{
-          n_comp: string | null;
-          tipo_comp: string | null;
-          fecha: string | null;
-          mes: string | null;
           codigo_cuenta: string | null;
           cta_descripcion: string | null;
           glosa: string | null;
@@ -69,7 +32,83 @@ export type Database = {
           rut: string | null;
           nombre: string | null;
           created_at: string | null;
-        }>;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["libro_contable"]["Row"],
+          "id"
+        >;
+        Update: Partial<
+          Database["public"]["Tables"]["libro_contable"]["Row"]
+        >;
+        Relationships: [];
+      };
+
+      // 🔹 Tabla: Libro de compras
+      libro_compras: {
+        Row: {
+          id: number;
+          fecha_emision: string | null;
+          tipo_documento: string | null;
+          proveedor: string | null;
+          rut_proveedor: string | null;
+          neto: number | null;
+          iva: number | null;
+          total: number | null;
+          created_at: string | null;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["libro_compras"]["Row"],
+          "id"
+        >;
+        Update: Partial<
+          Database["public"]["Tables"]["libro_compras"]["Row"]
+        >;
+        Relationships: [];
+      };
+
+      // 🔹 Tabla: Libro de ventas
+      libro_ventas: {
+        Row: {
+          id: number;
+          mes: number | null;
+          numero: number | null;
+          tipo_documento: string | null;
+          tipo_venta: string | null;
+          rut_cliente: string | null;
+          razon_social: string | null;
+          folio: string | null;
+          fecha_documento: string | null;
+          fecha_recepcion: string | null;
+          monto_neto: number | null;
+          monto_iva: number | null;
+          monto_total: number | null;
+          created_at: string | null;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["libro_ventas"]["Row"],
+          "id"
+        >;
+        Update: Partial<
+          Database["public"]["Tables"]["libro_ventas"]["Row"]
+        >;
+        Relationships: [];
+      };
+
+      // 🔹 Tabla: Resumen contable
+      resumen_contable: {
+        Row: {
+          id: number;
+          categoria: string | null;
+          control_total: number | null;
+          created_at: string | null;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["resumen_contable"]["Row"],
+          "id"
+        >;
+        Update: Partial<
+          Database["public"]["Tables"]["resumen_contable"]["Row"]
+        >;
         Relationships: [];
       };
 
