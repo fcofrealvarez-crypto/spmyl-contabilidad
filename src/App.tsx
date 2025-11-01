@@ -11,9 +11,9 @@ import Index from "@/pages/Index";
 import LibroMayor from "@/pages/LibroMayor";
 import Transactions from "@/pages/Transactions";
 import IVA from "@/pages/IVA";
-import Obligations from "@/pages/Obligations";
+import Obligations from "@/pages/Obligations"; // ✅ nombre exacto del archivo
 import Reports from "@/pages/Reports";
-import ImportarExcel from "@/pages/importar/ImportarExcel"; // ✅ NUEVO
+import ImportarExcel from "@/pages/importar/ImportarExcel"; // ✅ carpeta “importar” en minúsculas
 import NotFound from "@/pages/NotFound";
 
 // 🔹 Configuración de React Query
@@ -99,7 +99,7 @@ const App = () => {
               }
             />
 
-            {/* ✅ NUEVA RUTA: Importación Excel */}
+            {/* ✅ Nueva ruta para importar Excel */}
             <Route
               path="/importar-excel"
               element={
