@@ -34,13 +34,16 @@ CREATE TABLE public.asientos_contables (
 ALTER TABLE public.cuentas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.asientos_contables ENABLE ROW LEVEL SECURITY;
 
--- Políticas para cuentas (públicas para lectura, solo admins para escritura)
+-- Políticas para cuentas (compartidas entre usuarios pero solo lectura para la mayoría)
 CREATE POLICY "Las cuentas son visibles para usuarios autenticados"
 ON public.cuentas
 FOR SELECT
 TO authenticated
 USING (true);
 
+-- Solo permitir INSERT/UPDATE/DELETE a usuarios específicos (admin)
+-- Por ahora permitimos a todos los autenticados, pero en producción
+-- deberías crear un rol de admin y restringir esto
 CREATE POLICY "Solo usuarios autenticados pueden crear cuentas"
 ON public.cuentas
 FOR INSERT
@@ -51,7 +54,8 @@ CREATE POLICY "Solo usuarios autenticados pueden actualizar cuentas"
 ON public.cuentas
 FOR UPDATE
 TO authenticated
-USING (true);
+USING (true)
+WITH CHECK (true);
 
 -- Políticas para asientos contables (usuarios solo ven sus propios asientos)
 CREATE POLICY "Los usuarios pueden ver sus propios asientos"

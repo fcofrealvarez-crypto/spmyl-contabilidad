@@ -16,19 +16,19 @@ export type Database = {
       libro_contable: {
         Row: {
           id: number;
-          n_comp: string | null;
+          numero_comprobante: string | null;
           tipo_comp: string | null;
           fecha: string | null;
           mes: string | null;
           codigo_cuenta: string | null;
-          cta_descripcion: string | null;
+          cuenta_descripcion: string | null;
           glosa: string | null;
           debe: number | null;
           haber: number | null;
           control: number | null;
           compensacion: number | null;
           tipo_doc: string | null;
-          n_doc: string | null;
+          numero_documento: string | null;
           rut: string | null;
           nombre: string | null;
           created_at: string | null;

@@ -1,73 +1,180 @@
-# Welcome to your Lovable project
+# SPMYL Contabilidad
 
-## Project info
+Sistema profesional de gestión contable y financiera diseñado para pequeñas y medianas empresas en Chile.
 
-**URL**: https://lovable.dev/projects/93d3175b-5167-42b8-b346-0a53be44300d
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-## How can I edit this code?
+## 🚀 Características Principales
 
-There are several ways of editing your application.
+### 📊 Gestión Financiera
+- **Dashboard Interactivo**: Visualización en tiempo real de métricas financieras
+- **Transacciones**: Registro y seguimiento de ingresos y gastos
+- **Libro Mayor**: Gestión completa de asientos contables
+- **Cálculo de IVA**: Automatización de cálculos tributarios
+- **Reportes**: Generación de informes financieros en PDF y Excel
 
-**Use Lovable**
+### 🔐 Seguridad
+- Autenticación segura con Supabase
+- Row Level Security (RLS) en base de datos
+- Validación de entrada con Zod
+- Sanitización de datos
+- Cifrado HTTPS
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/93d3175b-5167-42b8-b346-0a53be44300d) and start prompting.
+### 💼 Características Empresariales
+- Multi-usuario con aislamiento de datos
+- Importación de datos desde Excel
+- Exportación de reportes
+- Gestión de obligaciones tributarias
+- Sistema de soporte integrado
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tecnologías
 
-**Use your preferred IDE**
+- **Frontend**: React 18 + TypeScript
+- **Build Tool**: Vite
+- **UI Framework**: Tailwind CSS + shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **State Management**: React Query
+- **Validación**: Zod
+- **Routing**: React Router v6
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📋 Requisitos Previos
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js 18 o superior
+- npm o yarn
+- Cuenta en Supabase (gratuita)
 
-Follow these steps:
+## 🚀 Instalación
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### 1. Clonar el Repositorio
+
+```bash
 git clone <YOUR_GIT_URL>
+cd spmyl-contabilidad
+```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### 2. Instalar Dependencias
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 3. Configurar Variables de Entorno
+
+```bash
+# Copiar archivo de ejemplo
+cp .env.example .env
+
+# Editar .env con tus credenciales de Supabase
+# VITE_SUPABASE_URL=https://xxxxx.supabase.co
+# VITE_SUPABASE_ANON_KEY=eyJhbGci...
+```
+
+### 4. Configurar Base de Datos
+
+Ver [DEPLOYMENT.md](./DEPLOYMENT.md) para instrucciones detalladas de configuración de Supabase.
+
+### 5. Iniciar Servidor de Desarrollo
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+La aplicación estará disponible en `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📦 Build de Producción
 
-**Use GitHub Codespaces**
+```bash
+# Crear build optimizado
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview del build
+npm run preview
+```
 
-## What technologies are used for this project?
+## 📚 Documentación
 
-This project is built with:
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)**: Guía completa de despliegue
+- **[SECURITY.md](./SECURITY.md)**: Documentación de seguridad
+- **[Lovable Project](https://lovable.dev/projects/93d3175b-5167-42b8-b346-0a53be44300d)**: Proyecto original
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔒 Seguridad
 
-## How can I deploy this project?
+Este proyecto implementa múltiples capas de seguridad:
 
-Simply open [Lovable](https://lovable.dev/projects/93d3175b-5167-42b8-b346-0a53be44300d) and click on Share -> Publish.
+- ✅ Row Level Security (RLS) en todas las tablas
+- ✅ Validación de entrada con Zod
+- ✅ Sanitización de datos
+- ✅ Protección contra XSS y SQL Injection
+- ✅ Autenticación JWT con Supabase
+- ✅ Variables de entorno protegidas
 
-## Can I connect a custom domain to my Lovable project?
+Ver [SECURITY.md](./SECURITY.md) para más detalles.
 
-Yes, you can!
+## 📱 Uso
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Registro e Inicio de Sesión
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Acceder a la aplicación
+2. Crear cuenta con email y contraseña segura
+3. Confirmar email (si está habilitado)
+4. Iniciar sesión
+
+### Crear Transacción
+
+1. Ir a "Transacciones"
+2. Click en "Nueva Transacción"
+3. Completar formulario:
+   - Tipo (Ingreso/Gasto)
+   - Categoría
+   - Monto
+   - Fecha
+   - Descripción
+4. Guardar
+
+### Calcular IVA
+
+1. Ir a "IVA"
+2. Seleccionar periodo
+3. El sistema calcula automáticamente:
+   - IVA Débito Fiscal
+   - IVA Crédito Fiscal
+   - IVA a Pagar/Favor
+
+### Generar Reportes
+
+1. Ir a "Informes"
+2. Seleccionar tipo de reporte
+3. Configurar parámetros
+4. Exportar en PDF o Excel
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crear rama de feature (`git checkout -b feature/AmazingFeature`)
+3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
+
+## 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver archivo `LICENSE` para más detalles.
+
+## 🆘 Soporte
+
+Para problemas o preguntas:
+
+- **Issues**: [GitHub Issues](https://github.com/tu-usuario/spmyl-contabilidad/issues)
+- **Email**: soporte@tuempresa.com
+- **Documentación**: Ver carpeta `/docs`
+
+## 🙏 Agradecimientos
+
+- [Supabase](https://supabase.com) - Backend as a Service
+- [shadcn/ui](https://ui.shadcn.com) - Componentes UI
+- [Lovable](https://lovable.dev) - Plataforma de desarrollo
+
+---
+
+**Desarrollado con ❤️ para SPMYL**
+
