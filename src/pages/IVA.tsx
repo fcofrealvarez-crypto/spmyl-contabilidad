@@ -14,9 +14,8 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client"; // ✅ Cliente correcto
+import { supabase } from "@/integrations/supabase/client";
 
-// 🔹 Tipado de registros
 interface IVARecord {
   period: string;
   debito: number;
@@ -40,30 +39,37 @@ export default function IVA() {
     year: "numeric",
   });
 
-  // 🔹 Cargar transacciones desde Supabase
+  // 🔹 Cargar datos desde Supabase (Libros Reales)
   useEffect(() => {
-    const fetchTransactions = async () => {
-      const { data, error } = await supabase.from("transactions").select("*");
-      if (error) {
+    const fetchIVAData = async () => {
+      try {
+        // 1. Calcular Débito Fiscal (Desde Ventas)
+        const { data: sales, error: salesError } = await supabase
+          .from("sales_book")
+          .select("iva_amount");
+
+        if (salesError) throw salesError;
+
+        // 2. Calcular Crédito Fiscal (Desde Compras)
+        const { data: purchases, error: purchasesError } = await supabase
+          .from("purchase_book")
+          .select("iva_amount");
+
+        if (purchasesError) throw purchasesError;
+
+        const debito = sales?.reduce((sum, s) => sum + Number(s.iva_amount), 0) || 0;
+        const credito = purchases?.reduce((sum, p) => sum + Number(p.iva_amount), 0) || 0;
+        const pagar = debito - credito;
+
+        setIvaData({ debito, credito, pagar });
+
+      } catch (error) {
         console.error(error);
-        toast.error("Error al cargar transacciones");
-        return;
+        toast.error("Error al calcular IVA");
       }
-
-      // Calcular IVA débito y crédito (19%)
-      const debito = data
-        .filter((t) => t.type === "Ingreso")
-        .reduce((sum, t) => sum + t.amount * 0.19, 0);
-      const credito = data
-        .filter((t) => t.type === "Gasto")
-        .reduce((sum, t) => sum + t.amount * 0.19, 0);
-
-      const pagar = debito - credito;
-
-      setIvaData({ debito, credito, pagar });
     };
 
-    fetchTransactions();
+    fetchIVAData();
   }, []);
 
   // 🔹 Guardar resultado y generar PDF
@@ -77,13 +83,9 @@ export default function IVA() {
       date: new Date().toLocaleDateString("es-CL"),
     };
 
-    // Guardar en Supabase
-    const { error } = await supabase.from("iva_records").insert(record);
-    if (error) {
-      console.error(error);
-      toast.error("Error al guardar declaración IVA");
-      return;
-    }
+    // Guardar en Supabase (tabla iva_records si existe, o solo local por ahora)
+    // Nota: Si la tabla iva_records no está actualizada, esto podría fallar. 
+    // Por ahora solo actualizamos el estado local y generamos PDF.
 
     setIvaHistory((prev) => [...prev, record]);
     toast.success("F29 generado exitosamente");
@@ -97,8 +99,8 @@ export default function IVA() {
       startY: 35,
       head: [["Concepto", "Monto"]],
       body: [
-        ["IVA Débito Fiscal (19%)", formatCurrency(ivaData.debito)],
-        ["IVA Crédito Fiscal (19%)", formatCurrency(ivaData.credito)],
+        ["IVA Débito Fiscal (Ventas)", formatCurrency(ivaData.debito)],
+        ["IVA Crédito Fiscal (Compras)", formatCurrency(ivaData.credito)],
         ["IVA a Pagar / Recuperar", formatCurrency(ivaData.pagar)],
       ],
     });
@@ -167,7 +169,7 @@ export default function IVA() {
               Seguimiento IVA
             </h1>
             <p className="text-muted-foreground mt-1">
-              Control y cálculo automático de tu IVA mensual
+              Control y cálculo automático de tu IVA mensual basado en Libros de Compra y Venta
             </p>
           </div>
           <div className="flex gap-3">
@@ -203,7 +205,7 @@ export default function IVA() {
             <div>
               <h3 className="font-semibold mb-2">IVA Débito Fiscal</h3>
               <p className="text-muted-foreground mb-1">
-                Ventas afectas → {formatCurrency(ivaData.debito / 0.19)}
+                Calculado desde Libro de Ventas
               </p>
               <p className="font-bold text-green-600">
                 {formatCurrency(ivaData.debito)}
@@ -213,7 +215,7 @@ export default function IVA() {
             <div>
               <h3 className="font-semibold mb-2">IVA Crédito Fiscal</h3>
               <p className="text-muted-foreground mb-1">
-                Compras afectas → {formatCurrency(ivaData.credito / 0.19)}
+                Calculado desde Libro de Compras
               </p>
               <p className="font-bold text-blue-600">
                 {formatCurrency(ivaData.credito)}

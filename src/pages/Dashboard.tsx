@@ -25,7 +25,12 @@ interface Transaction {
 
 export default function Dashboard() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [ivaPagar, setIvaPagar] = useState<number>(0);
+  const [stats, setStats] = useState({
+    ingresos: 0,
+    gastos: 0,
+    ivaPagar: 0,
+    balance: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   // 📅 Mes actual dinámico
@@ -38,25 +43,62 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: txData, error: txError } = await supabase
-          .from("transactions")
-          .select("*")
-          .order("date", { ascending: false })
-          .limit(5);
+        setLoading(true);
 
-        if (txError) throw txError;
+        // 1. Cargar Ventas (Ingresos)
+        const { data: sales, error: salesError } = await supabase
+          .from("sales_book")
+          .select("total_amount, iva_amount, issue_date, customer_name, id")
+          .order("issue_date", { ascending: false });
 
-        const { data: ivaData, error: ivaError } = await supabase
-          .from("iva_records")
-          .select("pagar")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+        if (salesError) throw salesError;
 
-        if (ivaError && ivaError.code !== "PGRST116") throw ivaError;
+        // 2. Cargar Compras (Gastos)
+        const { data: purchases, error: purchasesError } = await supabase
+          .from("purchase_book")
+          .select("total_amount, iva_amount, document_date, supplier_name, id")
+          .order("document_date", { ascending: false });
 
-        setTransactions(txData || []);
-        setIvaPagar(ivaData?.pagar || 0);
+        if (purchasesError) throw purchasesError;
+
+        // 3. Calcular Totales
+        const totalIngresos = sales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
+        const totalGastos = purchases?.reduce((sum, p) => sum + Number(p.total_amount), 0) || 0;
+
+        const totalIvaDebito = sales?.reduce((sum, s) => sum + Number(s.iva_amount), 0) || 0;
+        const totalIvaCredito = purchases?.reduce((sum, p) => sum + Number(p.iva_amount), 0) || 0;
+        const ivaPagar = totalIvaDebito - totalIvaCredito;
+
+        setStats({
+          ingresos: totalIngresos,
+          gastos: totalGastos,
+          ivaPagar: ivaPagar,
+          balance: totalIngresos - totalGastos,
+        });
+
+        // 4. Combinar para "Transacciones Recientes"
+        const recentSales = (sales || []).map(s => ({
+          id: s.id,
+          type: "Ingreso" as const,
+          description: `Venta a ${s.customer_name}`,
+          amount: Number(s.total_amount),
+          date: s.issue_date || new Date().toISOString(),
+        }));
+
+        const recentPurchases = (purchases || []).map(p => ({
+          id: p.id,
+          type: "Gasto" as const,
+          description: `Compra a ${p.supplier_name}`,
+          amount: Number(p.total_amount),
+          date: p.document_date || new Date().toISOString(),
+        }));
+
+        const allTransactions = [...recentSales, ...recentPurchases]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(0, 5);
+
+        setTransactions(allTransactions);
+
       } catch (error) {
         console.error(error);
         toast.error("Error al cargar información del dashboard");
@@ -67,17 +109,6 @@ export default function Dashboard() {
 
     fetchData();
   }, []);
-
-  // 💰 Cálculos automáticos
-  const ingresos = transactions
-    .filter((t) => t.type === "Ingreso")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const gastos = transactions
-    .filter((t) => t.type === "Gasto")
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const balance = ingresos - gastos;
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(v);
@@ -113,23 +144,23 @@ export default function Dashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="border-green-500/20 shadow-sm">
             <CardHeader className="flex items-center justify-between pb-2">
-              <CardTitle>Ingresos del Mes</CardTitle>
+              <CardTitle>Ingresos Totales</CardTitle>
               <TrendingUp className="h-5 w-5 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(ingresos)}</div>
-              <p className="text-sm text-muted-foreground mt-1">Últimos registros</p>
+              <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.ingresos)}</div>
+              <p className="text-sm text-muted-foreground mt-1">Total Ventas</p>
             </CardContent>
           </Card>
 
           <Card className="border-red-500/20 shadow-sm">
             <CardHeader className="flex items-center justify-between pb-2">
-              <CardTitle>Gastos del Mes</CardTitle>
+              <CardTitle>Gastos Totales</CardTitle>
               <TrendingDown className="h-5 w-5 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{formatCurrency(gastos)}</div>
-              <p className="text-sm text-muted-foreground mt-1">Últimos registros</p>
+              <div className="text-2xl font-bold text-red-600">{formatCurrency(stats.gastos)}</div>
+              <p className="text-sm text-muted-foreground mt-1">Total Compras</p>
             </CardContent>
           </Card>
 
@@ -139,9 +170,9 @@ export default function Dashboard() {
               <FileText className="h-5 w-5 text-yellow-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">{formatCurrency(ivaPagar)}</div>
+              <div className="text-2xl font-bold text-yellow-600">{formatCurrency(stats.ivaPagar)}</div>
               <p className="text-sm text-muted-foreground mt-1">
-                {ivaPagar > 0 ? "Pendiente de pago" : "Sin obligaciones actuales"}
+                {stats.ivaPagar > 0 ? "Pendiente de pago" : "A favor / Remanente"}
               </p>
             </CardContent>
           </Card>
@@ -153,14 +184,13 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div
-                className={`text-2xl font-bold ${
-                  balance >= 0 ? "text-blue-600" : "text-red-600"
-                }`}
+                className={`text-2xl font-bold ${stats.balance >= 0 ? "text-blue-600" : "text-red-600"
+                  }`}
               >
-                {formatCurrency(balance)}
+                {formatCurrency(stats.balance)}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                {balance >= 0 ? "Superávit operativo" : "Déficit operativo"}
+                {stats.balance >= 0 ? "Superávit operativo" : "Déficit operativo"}
               </p>
             </CardContent>
           </Card>
@@ -171,7 +201,7 @@ export default function Dashboard() {
           {/* Transacciones */}
           <Card className="p-6 border-primary/10 shadow-sm">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">Transacciones Recientes</h2>
+              <h2 className="text-xl font-bold">Movimientos Recientes</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -184,7 +214,7 @@ export default function Dashboard() {
 
             {transactions.length === 0 ? (
               <p className="text-muted-foreground text-sm">
-                No hay transacciones registradas aún.
+                No hay movimientos registrados aún.
               </p>
             ) : (
               <div className="space-y-4">
@@ -195,9 +225,8 @@ export default function Dashboard() {
                   >
                     <div className="flex items-center gap-3">
                       <Receipt
-                        className={`h-4 w-4 ${
-                          t.type === "Ingreso" ? "text-green-600" : "text-red-600"
-                        }`}
+                        className={`h-4 w-4 ${t.type === "Ingreso" ? "text-green-600" : "text-red-600"
+                          }`}
                       />
                       <div>
                         <p className="font-medium">{t.description}</p>
@@ -207,9 +236,8 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <p
-                      className={`font-semibold ${
-                        t.type === "Ingreso" ? "text-green-600" : "text-red-600"
-                      }`}
+                      className={`font-semibold ${t.type === "Ingreso" ? "text-green-600" : "text-red-600"
+                        }`}
                     >
                       {formatCurrency(t.amount)}
                     </p>
@@ -241,7 +269,7 @@ export default function Dashboard() {
                   Vence: 2025-10-31
                 </p>
                 <p className="text-sm font-semibold text-blue-600 mt-1">
-                  {formatCurrency(ivaPagar)}
+                  {formatCurrency(stats.ivaPagar > 0 ? stats.ivaPagar : 0)}
                 </p>
               </div>
             </div>
