@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabaseClient";
+import { useState, useEffect } from "react";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,168 +18,87 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Upload, Download, Search, Loader2 } from "lucide-react";
+import { Download, Search, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AsientoContable {
-  id?: string;
-  numero_comprobante: string;
-  tipo_comprobante: string;
-  fecha: string;
-  mes?: number | null;
-  codigo_cuenta: string;
-  cuenta_descripcion: string;
-  glosa: string;
-  debe: number;
-  haber: number;
-  control?: number | null;
-  compensacion?: number | null;
-  tipo_documento?: string;
-  numero_documento?: string;
-  rut: string;
-  nombre: string;
-  user_id?: string;
+interface JournalEntryLine {
+  id: string;
+  account_code: string;
+  account_name: string;
+  debit: number;
+  credit: number;
+  third_party_rut: string | null;
+  third_party_name: string | null;
+  journal_entry: {
+    entry_number: string;
+    entry_type: string;
+    entry_date: string;
+    gloss: string | null;
+    document_type: string | null;
+    document_number: string | null;
+  };
 }
 
 export default function LibroMayor() {
+  const [entries, setEntries] = useState<JournalEntryLine[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const queryClient = useQueryClient();
 
-  // ✅ Obtener datos desde Supabase
-  const { data: asientos = [], isLoading } = useQuery<AsientoContable[]>({
-    queryKey: ["libro-contable"],
-    queryFn: async (): Promise<AsientoContable[]> => {
-      const { data, error } = await supabase
-        .from("libro_contable")
-        .select("*")
-        .order("fecha", { ascending: false });
+  useEffect(() => {
+    fetchEntries();
+  }, []);
 
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-  });
-
-  // ✅ Mutación para insertar nuevos registros
-  const insertAsientosMutation = useMutation({
-    mutationFn: async (asientos: AsientoContable[]) => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError || !user)
-        throw new Error("Usuario no autenticado en Supabase");
-
-      const asientosWithUser = asientos.map((asiento) => ({
-        ...asiento,
-        user_id: user.id,
-      }));
-
-      const { error } = await supabase
-        .from("libro_contable")
-        .insert(asientosWithUser);
-
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["libro-contable"] });
-      toast.success("Asientos importados exitosamente");
-    },
-    onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : String(error);
-      toast.error("Error al importar: " + message);
-    },
-  });
-
-  // ✅ Importar archivo Excel y enviar a Supabase
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
+  const fetchEntries = async () => {
     try {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("journal_entry_lines")
+        .select(`
+          *,
+          journal_entry:journal_entries (
+            entry_number,
+            entry_type,
+            entry_date,
+            gloss,
+            document_type,
+            document_number
+          )
+        `)
+        .order("created_at", { ascending: false });
 
-      // 💡 Tipado robusto del Excel
-      const asientosToInsert = (
-        jsonData as Record<string, unknown>[]
-      ).map((row) => {
-        // 📅 Convertir fecha Excel → ISO
-        let fecha = row.FECHA;
-        if (typeof fecha === "number") {
-          const excelEpoch = new Date(1899, 11, 30);
-          fecha = new Date(excelEpoch.getTime() + fecha * 86400000)
-            .toISOString()
-            .split("T")[0];
-        } else if (fecha) {
-          const parsedDate = new Date(fecha as string);
-          fecha = isNaN(parsedDate.getTime())
-            ? new Date().toISOString().split("T")[0]
-            : parsedDate.toISOString().split("T")[0];
-        } else {
-          fecha = new Date().toISOString().split("T")[0];
-        }
+      if (error) throw error;
 
-        return {
-          numero_comprobante: (row["N. COMP"] as string) || (row["N COMP"] as string) || "",
-          tipo_comprobante: (row["TIPO COMP"] as string) || "TRASPASO",
-          fecha,
-          mes: row.MES ? parseInt(String(row.MES)) || null : null,
-          codigo_cuenta: (row.CODIGO as string) || "",
-          cuenta_descripcion:
-            (row["CTA DESCRIPCION"] as string) ||
-            (row["CTA_DESCRIPCION"] as string) ||
-            "",
-          glosa: (row.GLOSA as string) || "",
-          debe:
-            parseFloat(String(row.DEBE || "0").replace(/,/g, "")) || 0,
-          haber:
-            parseFloat(String(row.HABER || "0").replace(/,/g, "")) || 0,
-          control:
-            parseFloat(String(row.CONTROL || "0").replace(/,/g, "")) || null,
-          compensacion:
-            parseFloat(String(row.COMPENSACION || "0").replace(/,/g, "")) ||
-            null,
-          tipo_documento: (row["TIPO DOC"] as string) || "",
-          numero_documento: (row["N. DOC"] as string) || "",
-          rut: (row.RUT as string) || "",
-          nombre: (row.NOMBRE as string) || "",
-        };
-      });
-
-      await insertAsientosMutation.mutateAsync(asientosToInsert as AsientoContable[]);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      toast.error("Error al procesar archivo: " + message);
+      // Transform data to match interface if needed, but Supabase returns nested objects
+      // We need to cast or ensure the type matches.
+      // The query returns an array of objects where journal_entry is a single object (because it's a many-to-one from lines to header)
+      setEntries(data as unknown as JournalEntryLine[]);
+    } catch (error) {
+      console.error("Error fetching journal entries:", error);
+      toast.error("Error al cargar el Libro Mayor");
     } finally {
-      setIsUploading(false);
-      event.target.value = "";
+      setLoading(false);
     }
   };
 
-  // ✅ Exportar datos a Excel
   const handleExport = () => {
-    if (!asientos || asientos.length === 0) {
+    if (!entries || entries.length === 0) {
       toast.error("No hay datos para exportar");
       return;
     }
 
     const worksheet = XLSX.utils.json_to_sheet(
-      asientos.map((a) => ({
-        "N. COMP": a.numero_comprobante,
-        "TIPO COMP": a.tipo_comprobante,
-        FECHA: a.fecha,
-        CODIGO: a.codigo_cuenta,
-        "CTA DESCRIPCION": a.cuenta_descripcion,
-        GLOSA: a.glosa,
-        DEBE: a.debe,
-        HABER: a.haber,
-        RUT: a.rut,
-        NOMBRE: a.nombre,
+      entries.map((e) => ({
+        "N. COMP": e.journal_entry.entry_number,
+        "TIPO COMP": e.journal_entry.entry_type,
+        FECHA: new Date(e.journal_entry.entry_date).toLocaleDateString("es-CL"),
+        CODIGO: e.account_code,
+        "CTA DESCRIPCION": e.account_name,
+        GLOSA: e.journal_entry.gloss,
+        DEBE: e.debit,
+        HABER: e.credit,
+        RUT: e.third_party_rut,
+        NOMBRE: e.third_party_name,
       }))
     );
 
@@ -194,15 +111,11 @@ export default function LibroMayor() {
     toast.success("Exportado exitosamente");
   };
 
-  // ✅ Filtro de búsqueda
-  const filteredAsientos = asientos.filter(
-    (a) =>
-      a.cuenta_descripcion
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      a.glosa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.rut?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.nombre?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEntries = entries.filter((e) =>
+    e.account_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (e.journal_entry.gloss && e.journal_entry.gloss.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (e.third_party_name && e.third_party_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    e.account_code.includes(searchTerm)
   );
 
   const formatCurrency = (value: number) =>
@@ -211,60 +124,29 @@ export default function LibroMayor() {
       currency: "CLP",
     }).format(value);
 
-  // ✅ Render del componente
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Encabezado */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">Libro Mayor</h1>
             <p className="text-muted-foreground">
-              Gestiona y visualiza todos tus asientos contables
+              Visualización de todos los movimientos contables
             </p>
           </div>
 
           <div className="flex gap-2">
-            <Input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={handleFileUpload}
-              disabled={isUploading}
-              className="hidden"
-              id="file-upload"
-            />
-
-            <Button
-              onClick={() =>
-                document.getElementById("file-upload")?.click()
-              }
-              disabled={isUploading}
-              variant="outline"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Importando...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Importar Excel
-                </>
-              )}
-            </Button>
-
             <Button
               onClick={handleExport}
-              disabled={!asientos || asientos.length === 0}
+              disabled={!entries || entries.length === 0}
+              variant="outline"
             >
               <Download className="mr-2 h-4 w-4" />
-              Exportar
+              Exportar Excel
             </Button>
           </div>
         </div>
 
-        {/* Buscador */}
         <Card>
           <CardHeader>
             <CardTitle>Buscar Asientos</CardTitle>
@@ -276,7 +158,7 @@ export default function LibroMayor() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Buscar asientos contables..."
+                placeholder="Buscar movimientos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -285,21 +167,20 @@ export default function LibroMayor() {
           </CardContent>
         </Card>
 
-        {/* Tabla */}
         <Card>
           <CardHeader>
-            <CardTitle>Asientos Contables</CardTitle>
+            <CardTitle>Movimientos Contables</CardTitle>
             <CardDescription>
-              Total de asientos: {filteredAsientos?.length || 0}
+              Total de registros: {filteredEntries.length}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {loading ? (
               <div className="flex justify-center items-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : filteredAsientos.length > 0 ? (
-              <div className="overflow-x-auto">
+            ) : filteredEntries.length > 0 ? (
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -314,42 +195,42 @@ export default function LibroMayor() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAsientos.map((asiento) => (
-                      <TableRow key={asiento.id}>
+                    {filteredEntries.map((entry) => (
+                      <TableRow key={entry.id}>
                         <TableCell>
-                          {new Date(asiento.fecha).toLocaleDateString("es-CL")}
+                          {new Date(entry.journal_entry.entry_date).toLocaleDateString("es-CL")}
                         </TableCell>
                         <TableCell>
                           <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-medium">
-                            {asiento.tipo_comprobante}
+                            {entry.journal_entry.entry_type}
                           </span>
                         </TableCell>
                         <TableCell>
                           <div className="max-w-xs">
                             <p className="font-medium text-sm">
-                              {asiento.codigo_cuenta}
+                              {entry.account_code}
                             </p>
                             <p className="text-xs text-muted-foreground truncate">
-                              {asiento.cuenta_descripcion}
+                              {entry.account_name}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell className="max-w-xs truncate">
-                          {asiento.glosa}
+                          {entry.journal_entry.gloss || "-"}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {asiento.debe > 0
-                            ? formatCurrency(asiento.debe)
+                          {entry.debit > 0
+                            ? formatCurrency(entry.debit)
                             : "-"}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {asiento.haber > 0
-                            ? formatCurrency(asiento.haber)
+                          {entry.credit > 0
+                            ? formatCurrency(entry.credit)
                             : "-"}
                         </TableCell>
-                        <TableCell>{asiento.rut}</TableCell>
+                        <TableCell>{entry.third_party_rut || "-"}</TableCell>
                         <TableCell className="max-w-xs truncate">
-                          {asiento.nombre}
+                          {entry.third_party_name || "-"}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -359,10 +240,7 @@ export default function LibroMayor() {
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
-                  No hay asientos contables para mostrar
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Importa un archivo Excel para comenzar
+                  No hay movimientos para mostrar
                 </p>
               </div>
             )}

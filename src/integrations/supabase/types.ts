@@ -4,347 +4,410 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
 export type Database = {
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5";
-  };
   public: {
     Tables: {
-      // 🔹 Tabla: Libro contable
-      libro_contable: {
+      companies: {
         Row: {
-          id: number;
-          numero_comprobante: string | null;
-          tipo_comp: string | null;
-          fecha: string | null;
-          mes: string | null;
-          codigo_cuenta: string | null;
-          cuenta_descripcion: string | null;
-          glosa: string | null;
-          debe: number | null;
-          haber: number | null;
-          control: number | null;
-          compensacion: number | null;
-          tipo_doc: string | null;
-          numero_documento: string | null;
-          rut: string | null;
-          nombre: string | null;
-          created_at: string | null;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["libro_contable"]["Row"],
-          "id"
-        >;
-        Update: Partial<
-          Database["public"]["Tables"]["libro_contable"]["Row"]
-        >;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Libro de compras
-      libro_compras: {
-        Row: {
-          id: number;
-          fecha_emision: string | null;
-          tipo_documento: string | null;
-          proveedor: string | null;
-          rut_proveedor: string | null;
-          neto: number | null;
-          iva: number | null;
-          total: number | null;
-          created_at: string | null;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["libro_compras"]["Row"],
-          "id"
-        >;
-        Update: Partial<
-          Database["public"]["Tables"]["libro_compras"]["Row"]
-        >;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Libro de ventas
-      libro_ventas: {
-        Row: {
-          id: number;
-          mes: number | null;
-          numero: number | null;
-          tipo_documento: string | null;
-          tipo_venta: string | null;
-          rut_cliente: string | null;
-          razon_social: string | null;
-          folio: string | null;
-          fecha_documento: string | null;
-          fecha_recepcion: string | null;
-          monto_neto: number | null;
-          monto_iva: number | null;
-          monto_total: number | null;
-          created_at: string | null;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["libro_ventas"]["Row"],
-          "id"
-        >;
-        Update: Partial<
-          Database["public"]["Tables"]["libro_ventas"]["Row"]
-        >;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Resumen contable
-      resumen_contable: {
-        Row: {
-          id: number;
-          categoria: string | null;
-          control_total: number | null;
-          created_at: string | null;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["resumen_contable"]["Row"],
-          "id"
-        >;
-        Update: Partial<
-          Database["public"]["Tables"]["resumen_contable"]["Row"]
-        >;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Asientos contables
-      asientos_contables: {
-        Row: {
-          codigo_cuenta: string;
-          compensacion: number | null;
-          control: number | null;
-          created_at: string;
-          cuenta_descripcion: string;
-          debe: number | null;
-          fecha: string;
-          glosa: string | null;
-          haber: number | null;
-          id: string;
-          mes: number | null;
-          nombre: string | null;
-          numero_comprobante: string | null;
-          numero_documento: string | null;
-          rut: string | null;
-          tipo_comprobante: string;
-          tipo_documento: string | null;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["asientos_contables"]["Row"],
-          "id" | "updated_at"
-        >;
-        Update: Partial<
-          Database["public"]["Tables"]["asientos_contables"]["Row"]
-        >;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Cuentas
-      cuentas: {
-        Row: {
-          codigo: string;
-          created_at: string;
-          descripcion: string;
-          id: string;
-          tipo: string;
-        };
-        Insert: Omit<
-          Database["public"]["Tables"]["cuentas"]["Row"],
-          "id" | "created_at"
-        >;
-        Update: Partial<Database["public"]["Tables"]["cuentas"]["Row"]>;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Transacciones contables
-      transactions: {
-        Row: {
-          id: string;
-          type: "Ingreso" | "Gasto";
-          category: string;
-          description: string;
-          amount: number;
-          date: string;
-          document?: string | null;
-          created_at?: string | null;
-        };
+          id: string
+          name: string
+          rut: string | null
+          address: string | null
+          phone: string | null
+          email: string | null
+          website: string | null
+          logo_url: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          type: "Ingreso" | "Gasto";
-          category: string;
-          description: string;
-          amount: number;
-          date: string;
-          document?: string | null;
-          created_at?: string | null;
-        };
-        Update: Partial<{
-          type: "Ingreso" | "Gasto";
-          category: string;
-          description: string;
-          amount: number;
-          date: string;
-          document?: string | null;
-          created_at?: string | null;
-        }>;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Registros IVA (F29)
-      iva_records: {
+          id?: string
+          name: string
+          rut?: string | null
+          address?: string | null
+          phone?: string | null
+          email?: string | null
+          website?: string | null
+          logo_url?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          rut?: string | null
+          address?: string | null
+          phone?: string | null
+          email?: string | null
+          website?: string | null
+          logo_url?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_members: {
         Row: {
-          id: string;
-          period: string;
-          debito: number;
-          credito: number;
-          pagar: number;
-          status: string;
-          date: string;
-          created_at?: string | null;
-        };
+          id: string
+          company_id: string
+          user_id: string
+          role: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          period: string;
-          debito: number;
-          credito: number;
-          pagar: number;
-          status: string;
-          date: string;
-          created_at?: string | null;
-        };
-        Update: Partial<{
-          period: string;
-          debito: number;
-          credito: number;
-          pagar: number;
-          status: string;
-          date: string;
-          created_at?: string | null;
-        }>;
-        Relationships: [];
-      };
-
-      // 🔹 Tabla: Soporte (para solicitudes)
-      soporte: {
+          id?: string
+          company_id: string
+          user_id: string
+          role?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          user_id?: string
+          role?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      chart_of_accounts: {
         Row: {
-          id: string;
-          nombre: string;
-          email: string;
-          mensaje: string;
-          fecha: string;
-          created_at?: string | null;
-        };
+          id: string
+          company_id: string
+          code: string
+          name: string
+          account_type: string
+          parent_code: string | null
+          level: number
+          is_detail: boolean
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          nombre: string;
-          email: string;
-          mensaje: string;
-          fecha: string;
-          created_at?: string | null;
-        };
-        Update: Partial<{
-          nombre: string;
-          email: string;
-          mensaje: string;
-          fecha: string;
-          created_at?: string | null;
-        }>;
-        Relationships: [];
-      };
-    };
-
-    Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
-    Enums: { [_ in never]: never };
-    CompositeTypes: { [_ in never]: never };
-  };
-};
-
-// 🔹 Helpers Supabase CLI
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
+          id?: string
+          company_id: string
+          code: string
+          name: string
+          account_type: string
+          parent_code?: string | null
+          level?: number
+          is_detail?: boolean
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          code?: string
+          name?: string
+          account_type?: string
+          parent_code?: string | null
+          level?: number
+          is_detail?: boolean
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chart_of_accounts_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          }
+        ]
       }
-      ? R
-      : never
-    : never;
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
+      journal_entries: {
+        Row: {
+          id: string
+          company_id: string
+          entry_number: string
+          entry_type: string
+          entry_date: string
+          month: number
+          year: number
+          description: string | null
+          gloss: string | null
+          document_type: string | null
+          document_number: string | null
+          status: string
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          entry_number: string
+          entry_type: string
+          entry_date: string
+          month: number
+          year: number
+          description?: string | null
+          gloss?: string | null
+          document_type?: string | null
+          document_number?: string | null
+          status?: string
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          entry_number?: string
+          entry_type?: string
+          entry_date?: string
+          month?: number
+          year?: number
+          description?: string | null
+          gloss?: string | null
+          document_type?: string | null
+          document_number?: string | null
+          status?: string
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          }
+        ]
       }
-      ? I
-      : never
-    : never;
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
+      journal_entry_lines: {
+        Row: {
+          id: string
+          journal_entry_id: string
+          account_code: string
+          account_name: string
+          debit: number
+          credit: number
+          control: number | null
+          compensation: number | null
+          third_party_rut: string | null
+          third_party_name: string | null
+          line_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          journal_entry_id: string
+          account_code: string
+          account_name: string
+          debit?: number
+          credit?: number
+          control?: number | null
+          compensation?: number | null
+          third_party_rut?: string | null
+          third_party_name?: string | null
+          line_order: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          journal_entry_id?: string
+          account_code?: string
+          account_name?: string
+          debit?: number
+          credit?: number
+          control?: number | null
+          compensation?: number | null
+          third_party_rut?: string | null
+          third_party_name?: string | null
+          line_order?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journal_entry_lines_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          }
+        ]
       }
-      ? U
-      : never
-    : never;
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const;
+      purchase_book: {
+        Row: {
+          id: string
+          company_id: string
+          month: number
+          year: number
+          line_number: number
+          document_type: string
+          purchase_type: string
+          supplier_rut: string
+          supplier_name: string
+          folio: string | null
+          document_date: string | null
+          reception_date: string | null
+          acknowledgment_date: string | null
+          exempt_amount: number
+          net_amount: number
+          iva_amount: number
+          fixed_asset_amount: number
+          non_recoverable_iva: number
+          total_amount: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          month: number
+          year: number
+          line_number: number
+          document_type: string
+          purchase_type: string
+          supplier_rut: string
+          supplier_name: string
+          folio?: string | null
+          document_date?: string | null
+          reception_date?: string | null
+          acknowledgment_date?: string | null
+          exempt_amount?: number
+          net_amount?: number
+          iva_amount?: number
+          fixed_asset_amount?: number
+          non_recoverable_iva?: number
+          total_amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          month?: number
+          year?: number
+          line_number?: number
+          document_type?: string
+          purchase_type?: string
+          supplier_rut?: string
+          supplier_name?: string
+          folio?: string | null
+          document_date?: string | null
+          reception_date?: string | null
+          acknowledgment_date?: string | null
+          exempt_amount?: number
+          net_amount?: number
+          iva_amount?: number
+          fixed_asset_amount?: number
+          non_recoverable_iva?: number
+          total_amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_book_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      sales_book: {
+        Row: {
+          id: string
+          company_id: string
+          month: number
+          year: number
+          line_number: number
+          document_type: string
+          sale_type: string
+          customer_rut: string
+          customer_name: string
+          folio: string | null
+          issue_date: string | null
+          exempt_amount: number
+          net_amount: number
+          iva_amount: number
+          total_amount: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          company_id: string
+          month: number
+          year: number
+          line_number: number
+          document_type: string
+          sale_type: string
+          customer_rut: string
+          customer_name: string
+          folio?: string | null
+          issue_date?: string | null
+          exempt_amount?: number
+          net_amount?: number
+          iva_amount?: number
+          total_amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          company_id?: string
+          month?: number
+          year?: number
+          line_number?: number
+          document_type?: string
+          sale_type?: string
+          customer_rut?: string
+          customer_name?: string
+          folio?: string | null
+          issue_date?: string | null
+          exempt_amount?: number
+          net_amount?: number
+          iva_amount?: number
+          total_amount?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_book_company_id_fkey"
+            columns: ["company_id"]
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}

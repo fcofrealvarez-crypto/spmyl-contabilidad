@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FileText, Receipt, AlertCircle, TrendingUp, Settings, LogOut, BookOpen } from "lucide-react";
+import { LayoutDashboard, FileText, Receipt, AlertCircle, TrendingUp, Settings, LogOut, BookOpen, ShoppingCart, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ interface LayoutProps {
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: BookOpen, label: "Libro Mayor", href: "/libro-mayor" },
+  { icon: ShoppingCart, label: "Libro Compras", href: "/libro-compras" },
+  { icon: Tag, label: "Libro Ventas", href: "/libro-ventas" },
   { icon: Receipt, label: "Transacciones", href: "/transacciones" },
   { icon: FileText, label: "IVA", href: "/iva" },
   { icon: AlertCircle, label: "Obligaciones", href: "/obligaciones" },

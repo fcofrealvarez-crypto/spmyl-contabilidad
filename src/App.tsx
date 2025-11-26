@@ -13,7 +13,9 @@ import Transactions from "@/pages/Transactions";
 import IVA from "@/pages/IVA";
 import Obligations from "@/pages/Obligations"; // ✅ nombre exacto del archivo
 import Reports from "@/pages/Reports";
-import ImportarExcel from "@/pages/importar/ImportarExcel"; // ✅ carpeta “importar” en minúsculas
+import ImportarExcel from "@/pages/importar/ImportarExcel";
+import LibroCompras from "@/pages/LibroCompras";
+import LibroVentas from "@/pages/LibroVentas";
 import NotFound from "@/pages/NotFound";
 
 // 🔹 Configuración de React Query
@@ -95,6 +97,22 @@ const App = () => {
               element={
                 <ProtectedRoute>
                   <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/libro-compras"
+              element={
+                <ProtectedRoute>
+                  <LibroCompras />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/libro-ventas"
+              element={
+                <ProtectedRoute>
+                  <LibroVentas />
                 </ProtectedRoute>
               }
             />
